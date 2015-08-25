@@ -27,6 +27,12 @@ http_settings:
 # Check twice that none of the components is a symlink, including "/home".
 repos_path: "/home/git/repositories"
 
+# Default bare git repo config setting for filesystem level access
+# see https://www.kernel.org/pub/software/scm/git/docs/git-init.html
+# option shared for details. Default git setting is umask - other options
+# include group, all, or a custom value mode i.e. "0640"
+sharedrepository: umask
+
 # File used as authorized_keys for gitlab user
 auth_file: "/home/git/.ssh/authorized_keys"
 

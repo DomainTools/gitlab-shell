@@ -92,11 +92,17 @@ class GitlabProjects
     system(*cmd)
   end
 
+  def configure_bare_repo
+    cmd = %W(git --git-dir=#{full_path} config core.sharedrepository #{GitlabConfig.new.config['sharedrepository']})
+    pid = Process.spawn(*cmd)
+    Process.wait(pid)
+  end
+
   def add_project
     $logger.info "Adding project #{@project_name} at <#{full_path}>."
     FileUtils.mkdir_p(full_path, mode: 0770)
     cmd = %W(git --git-dir=#{full_path} init --bare)
-    system(*cmd) && self.class.create_hooks(full_path)
+    system(*cmd) && self.class.create_hooks(full_path) && configure_bare_repo
   end
 
   def list_projects
@@ -155,6 +161,7 @@ class GitlabProjects
       false
     else
       self.class.create_hooks(full_path)
+      configure_bare_repo
       # The project was imported successfully.
       # Remove the origin URL since it may contain password.
       remove_origin_in_repo
@@ -220,7 +227,7 @@ class GitlabProjects
 
     $logger.info "Forking project from <#{full_path}> to <#{full_destination_path}>."
     cmd = %W(git clone --bare -- #{full_path} #{full_destination_path})
-    system(*cmd) && self.class.create_hooks(full_destination_path)
+    system(*cmd) && self.class.create_hooks(full_destination_path) && configure_bare_repo
   end
 
   def update_head
